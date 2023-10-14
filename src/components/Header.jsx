@@ -4,10 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 export default function Header() {
   const location = useLocation();
   //   location.pathname  will give path of current page
-  //   console.log(location);
 
   const navigate = useNavigate();
-  console.log(navigate);
+  // console.log(navigate);
 
   function pathMatchRoute(route) {
     if (route === location.pathname) {
