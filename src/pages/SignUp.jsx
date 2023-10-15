@@ -5,7 +5,6 @@ import OAuth from "../components/OAuth";
 import {
   getAuth,
   createUserWithEmailAndPassword,
-  updatePhoneNumber,
   updateProfile,
 } from "firebase/auth";
 import { db } from "../firebase";
