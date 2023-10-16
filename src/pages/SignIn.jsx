@@ -33,7 +33,7 @@ export default function SignIn() {
         navigate("/");
       }
     } catch (error) {
-      toast("Invalid Credential");
+      toast.error("Invalid Credential");
     }
   }
   return (
