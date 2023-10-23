@@ -1,6 +1,9 @@
-import { getAuth } from "firebase/auth";
-import React, { useState } from "react";
+import { getAuth, updateProfile } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { db } from "../firebase";
 
 export default function Profile() {
   const auth = getAuth();
@@ -9,10 +12,36 @@ export default function Profile() {
     name: auth.currentUser.displayName,
     email: auth.currentUser.email,
   });
+  const [changeDetail, setChangeDetail] = useState(false);
   const { name, email } = formData;
   function onLogOut() {
     auth.signOut();
     navigate("/");
+  }
+  function onChange(e) {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: e.target.value,
+    }));
+  }
+
+  async function onSubmit() {
+    try {
+      if (auth.currentUser.displayName !== name) {
+        // update display name in firebase auth
+        await updateProfile(auth.currentUser, {
+          displayName: name,
+        });
+        // update name in fireStore
+        const docRef = doc(db, "users", auth.currentUser.uid);
+        await updateDoc(docRef, {
+          name,
+        });
+      }
+      toast.success("Profile details updated");
+    } catch (error) {
+      toast.error("Could not update the profile details");
+    }
   }
 
   return (
@@ -26,8 +55,11 @@ export default function Profile() {
               type="text"
               id="name"
               value={name}
-              disabled
-              className="w-full px-4 py-3 mb-6 rounded bg-white border border-gray-300"
+              disabled={!changeDetail}
+              onChange={onChange}
+              className={`w-full px-4 py-3 mb-6 rounded bg-white border border-gray-300 ${
+                changeDetail && "bg-teal-500 focus:bg-teal-700 text-white"
+              }`}
             />
             {/* Email input */}
             <input
@@ -40,8 +72,14 @@ export default function Profile() {
             <div className="flex justify-between whitespace-nowrap text-sm sm:text-lg md:text-base">
               <p className="flex items-center">
                 Do you want to change your name{" "}
-                <span className="text-red-500 ml-1 hover:text-red-700 transition ease-in-out duration-200 cursor-pointer">
-                  Edit
+                <span
+                  onClick={() => {
+                    changeDetail && onSubmit();
+                    setChangeDetail((prevState) => !prevState);
+                  }}
+                  className="text-red-500 ml-1 hover:text-red-700 transition ease-in-out duration-200 cursor-pointer"
+                >
+                  {changeDetail ? "Apply Change" : "Edit"}
                 </span>
               </p>
               <p
